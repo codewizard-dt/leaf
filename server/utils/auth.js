@@ -5,6 +5,27 @@ const secret = 'mysecretsshhhhh';
 const expiration = '2h';
 
 module.exports = {
+  authContext: function ({ req }) {
+    let token = req.query.token || req.headers.authorization;
+
+    if (req.headers.authorization) {
+      token = token.split(' ').pop().trim();
+    }
+
+    if (!token) {
+      return req
+    }
+
+    // verify token and get user data out of it
+    try {
+      const { data } = jwt.verify(token, secret, { maxAge: expiration });
+      req.user = data
+      return { user: data }
+    } catch {
+      return req
+    }
+    return req
+  },
   // function for our authenticated routes
   authMiddleware: function (req, res, next) {
     // allows token to be sent via  req.query or headers
